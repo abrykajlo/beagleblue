@@ -21,7 +21,7 @@ int main()
 	int i = 0;
 	while (1) {
 		sprintf(buf, "{\"temperature\":{\"temp0\":%d,\"temp1\":%d}}", i, i);
-		beagleblue_android_send("{\"temperature\":{\"temp0\":%d,\"temp1\":1.356}}", BUFFER_SIZE));
+		beagleblue_android_send("{\"temperature\":{\"temp0\":%d,\"temp1\":1.356}}", BUFFER_SIZE);
 		memset(buf, 0, sizeof(buf));
 		i++;
 		sleep(1);
