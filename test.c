@@ -18,10 +18,10 @@ int main()
 {
 	char buf[1024] = { 0 };
 	beagleblue_init(&callback);
-	int i = 0;
+	double i = 0.0;
 	while (1) {
-		sprintf(buf, "{\"temperature\":{\"temp0\":%d,\"temp1\":%d}}", i, i);
-		beagleblue_android_send("{\"temperature\":{\"temp0\":%d,\"temp1\":1.356}}", BUFFER_SIZE);
+		sprintf(buf, "{\"temperature\":{\"temp0\":%f,\"temp1\":%f}}", i, i);
+		beagleblue_android_send(buf, strlen(buf));
 		memset(buf, 0, sizeof(buf));
 		i++;
 		sleep(1);
