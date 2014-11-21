@@ -21,10 +21,10 @@ int main()
 	double i = 0.0;
 	while (1) {
 		sprintf(buf, "{\"temperature\":{\"temp0\":%f,\"temp1\":%f}}", i, i);
-		beagleblue_android_send(buf, strlen(buf));
+		beagleblue_android_send(buf);
 		memset(buf, 0, sizeof(buf));
 		i++;
-		sleep(1);
+		usleep(100);
 	}
 	return 0;
 }

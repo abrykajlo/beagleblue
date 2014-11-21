@@ -86,7 +86,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 
 static void *android_recv_thread(void *callback)
 {
-	void (*function_callback)(char *) = callback;
+	void (*on_receive)(char *) = callback;
 	fd_set fds;
 	//init up here
 	while(!beagleblue_is_done) {
@@ -102,7 +102,7 @@ static void *android_recv_thread(void *callback)
 
 		if (FD_ISSET(android_client, &fds)) {
 			recv(android_client, android_recv_buffer, 16, 0);
-			function_callback(android_recv_buffer);
+			on_receive(android_recv_buffer);
 		}
 	}
 }
@@ -120,7 +120,7 @@ static void *android_send_thread()
 
 static void *glass_recv_thread(void *callback)
 {
-	void (*function_callback)(char *) = callback;
+	void (*on_receive)(char *) = callback;
 	fd_set fds;
 	//init up here
 	while(!beagleblue_is_done) {
@@ -136,7 +136,7 @@ static void *glass_recv_thread(void *callback)
 
 		if (FD_ISSET(glass_client, &fds)) {
 			recv(glass_client, glass_recv_buffer, BUFFER_SIZE, MSG_DONTWAIT);
-			function_callback(glass_recv_buffer);
+			on_receive(glass_recv_buffer);
 		}
 	}
 }
@@ -152,7 +152,7 @@ static void *glass_send_thread()
 	}
 }
 
-void beagleblue_init(void (*callback)(char *))
+void beagleblue_init(void (*on_receive)(char *))
 {
 	beagleblue_is_done = false;
 	set_bluetooth_mode(SCAN_INQUIRY | SCAN_PAGE);
@@ -161,9 +161,9 @@ void beagleblue_init(void (*callback)(char *))
 	//beagleblue_connect(&glass_sock, &glass_client, GLASS_PORT);
 	set_bluetooth_mode(SCAN_DISABLED);
 	pthread_create(&android_send_thread_id, NULL, &android_send_thread, NULL);
-	pthread_create(&android_recv_thread_id, NULL, &android_recv_thread, callback);
+	pthread_create(&android_recv_thread_id, NULL, &android_recv_thread, on_receive);
 	//pthread_create(&glass_send_thread_id, NULL, &glass_send_thread, NULL);
-	//pthread_create(&glass_recv_thread_id, NULL, &glass_recv_thread, callback);
+	//pthread_create(&glass_recv_thread_id, NULL, &glass_recv_thread, on_receive);
 	return;
 }
 
@@ -173,24 +173,24 @@ void beagleblue_exit()
 	return;
 }
 
-int beagleblue_glass_send(char *buf, int len)
+int beagleblue_glass_send(char *buf)
 {
 	//gets unlocked inside the glass send thread
 	pthread_mutex_lock(&glass_send_mutex);
 		memset(glass_send_buffer, 0, BUFFER_SIZE);
-		strncpy(glass_send_buffer, buf, len);
+		strncpy(glass_send_buffer, buf, BUFFER_SIZE);
 		glass_is_sending = true;
 		//needs to be thread safe
 
 	return 0;
 }
 
-int beagleblue_android_send(char *buf, int len)
+int beagleblue_android_send(char *buf)
 {
 	//gets unlock inside android send thread
 	pthread_mutex_lock(&android_send_mutex);
 	memset(android_send_buffer, 0, BUFFER_SIZE);
-		strncpy(android_send_buffer, buf, len);
+		strncpy(android_send_buffer, buf, BUFFER_SIZE);
 		android_is_sending = true; //modify to be thread safe
 	return 0;
 }
